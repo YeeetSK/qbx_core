@@ -1456,6 +1456,7 @@ end
 lib.callback.register('qbx_core:server:deleteCharacter', DeleteCharacter)
 
 ---@param citizenid string
+---@return boolean success false if character doesn't exist, not deleted
 function ForceDeleteCharacter(citizenid)
     local result = storage.fetchPlayerEntity(citizenid).license
     if result then
@@ -1464,18 +1465,22 @@ function ForceDeleteCharacter(citizenid)
             DropPlayer(player.PlayerData.source --[[@as string]], 'An admin deleted the character which you are currently using')
         end
 
-        CreateThread(function()
-            local success = storage.deletePlayer(citizenid)
-            if success then
-                logger.log({
-                    source = 'qbx_core',
-                    webhook = config.logging.webhook['joinleave'],
-                    event = 'Character Force Deleted',
-                    color = 'red',
-                    message = ('Character **%s** got deleted'):format(citizenid),
-                })
-            end
-        end)
+        local success = storage.deletePlayer(citizenid)
+        if success then
+            logger.log({
+                source = 'qbx_core',
+                webhook = config.logging.webhook['joinleave'],
+                event = 'Character Force Deleted',
+                color = 'red',
+                message = ('Character **%s** got deleted'):format(citizenid),
+            })
+            return true
+        else
+            return false
+        end
+
+    else
+        return false
     end
 end
 
